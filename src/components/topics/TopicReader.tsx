@@ -21,6 +21,7 @@ import { VisualizationRegistry } from "@/components/visualizations/Visualization
 import { templateCapabilities } from "@/lib/topics/capabilities";
 import type { TopicRecord } from "@/lib/topics/schemas";
 export function TopicReader({ id }: { id: string }) {
+  const [tutorTarget, setTutorTarget] = useState<HTMLDivElement | null>(null);
   const [detailsTarget, setDetailsTarget] = useState<HTMLDivElement | null>(
     null,
   );
@@ -254,6 +255,20 @@ export function TopicReader({ id }: { id: string }) {
                     scene={scene}
                     storageKey={`${id}:${step.id}`}
                     detailsTarget={detailsTarget}
+                    tutorTarget={tutorTarget}
+                    tutor={{
+                      kind: "topic",
+                      lessonId: id,
+                      sceneId: step.id,
+                      level: mode,
+                      navigation: lesson.plan.steps.map((s) => s.id),
+                      onNavigate: (sceneId) => {
+                        const index = lesson.plan.steps.findIndex(
+                          (s) => s.id === sceneId,
+                        );
+                        if (index >= 0) select(index);
+                      },
+                    }}
                   />
                 )}
                 {!scene && template && template !== "none" ? (
@@ -341,6 +356,7 @@ export function TopicReader({ id }: { id: string }) {
                 className="topic-context"
                 aria-label="Contextual explanations"
               >
+                <div className="tutor-host" ref={setTutorTarget} />
                 <details className="context-notes" open>
                   <summary>Explanation &amp; notes</summary>
                   <div

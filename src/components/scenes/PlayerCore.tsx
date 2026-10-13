@@ -14,20 +14,25 @@ import {
 } from "@/lib/scenes/actions";
 import { useReducedMotion } from "@/components/layout/useReducedMotion";
 import { sceneRegistry, formatNumber } from "./SceneRegistry";
-import { useSceneSession, type TutorBinding } from './useSceneSession';
+import { useSceneSession, type TutorBinding } from "./useSceneSession";
+import { createPortal } from "react-dom";
+import { TutorPanel } from "@/components/tutor/TutorPanel";
+import { sceneActionSchema } from "@/lib/scenes/actions";
 export function PlayerCore({
   scene,
   storageKey,
   detailsTarget,
   tutor,
+  tutorTarget,
 }: {
   scene: Scene;
   storageKey: string;
   detailsTarget?: HTMLElement | null;
   tutor?: TutorBinding;
+  tutorTarget?: HTMLElement | null;
 }) {
-  const session=useSceneSession(scene,tutor);
-  const {state,setState}=session;
+  const session = useSceneSession(scene, tutor);
+  const { state, setState } = session;
   const [ready, setReady] = useState(false),
     [feedback, setFeedback] = useState("");
   const reduced = useReducedMotion(),
@@ -77,9 +82,12 @@ export function PlayerCore({
       setFeedback("Reduced motion is enabled. Use manual stepping.");
       return;
     }
-    const before=session.ref.current;
+    const before = session.ref.current;
     const result = transition(scene, before, input);
-    if(result.ok)setState(result.state);
+    if (result.ok) setState(result.state);
+    const parsed = sceneActionSchema.safeParse(input);
+    if (result.ok && parsed.success && parsed.data.type === "set_parameter")
+      session.remember(before, result.state, [parsed.data]);
     setFeedback(result.feedback);
   }
   const action = (
@@ -336,6 +344,23 @@ export function PlayerCore({
           <p>Reduced motion is on. Advance manually with the controls.</p>
         )}
       </details>
+      {tutor &&
+        (() => {
+          const panel = (
+            <TutorPanel
+              binding={tutor}
+              revision={session.revision}
+              capture={() => session.capture("explore")}
+              apply={session.apply}
+              suggestions={[
+                "What assumptions are we making?",
+                "Why did the result change?",
+                "Show me the next step.",
+              ]}
+            />
+          );
+          return tutorTarget ? createPortal(panel, tutorTarget) : panel;
+        })()}
     </section>
   );
 }

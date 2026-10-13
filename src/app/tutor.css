@@ -1,0 +1,201 @@
+.tutor-panel {
+  min-width: 0;
+  border-top: 2px solid var(--accent);
+  padding: 18px 0 22px;
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+.tutor-panel > summary {
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.tutor-panel > summary > span {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tutor-intro,
+.tutor-disclosure {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.tutor-transcript {
+  max-height: 420px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  margin: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tutor-turn {
+  padding: 0 0 14px;
+  margin: 0 0 15px;
+}
+.tutor-turn.user {
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+}
+.tutor-turn p {
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 8px 0 0;
+}
+.tutor-panel button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 8px 11px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.tutor-panel button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.tutor-panel button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.tutor-panel .tutor-apply,
+.tutor-composer-actions button[type="submit"] {
+  background: var(--accent);
+  color: var(--accent-ink, #fff);
+  border-color: var(--accent);
+}
+.tutor-results {
+  border-block: 1px solid var(--line);
+  padding: 12px 0;
+  margin-bottom: 12px;
+}
+.tutor-results summary,
+.tutor-sources summary {
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tutor-results pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.9;
+  font-family: var(--font-mono, monospace);
+  margin-bottom: 0;
+  font-variant-numeric: tabular-nums;
+}
+.tutor-action-list {
+  font-size: 12px;
+  padding-left: 18px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.tutor-caveat,
+.tutor-status {
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tutor-caveat {
+  color: var(--muted);
+}
+.tutor-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 18px 0;
+}
+.tutor-suggestions button {
+  text-align: left;
+  font-size: 11px;
+  background: transparent;
+}
+.tutor-panel form > label {
+  font-size: 12px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+.tutor-panel textarea {
+  display: block;
+  resize: vertical;
+  width: 100%;
+  min-height: 85px;
+  max-height: 240px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.tutor-composer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+.tutor-usage {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin: 12px 0;
+}
+.tutor-error {
+  font-size: 12px;
+  color: var(--ink);
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+}
+.tutor-sources {
+  margin: 14px 0;
+}
+.tutor-sources a {
+  font-size: 12px;
+  color: var(--accent);
+  display: block;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.tutor-sources blockquote {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 8px 0;
+  border-left: 1px solid var(--line);
+  padding-left: 12px;
+}
+.tutor-disclosure {
+  display: block;
+  margin-top: 14px;
+  font-size: 10px;
+}
+.tutor-replay {
+  margin: 8px 0;
+}
+@media (max-width: 1023px) {
+  .tutor-host {
+    grid-column: 1/-1;
+  }
+  .tutor-panel {
+    padding-inline: 4px;
+  }
+  .tutor-transcript {
+    max-height: 300px;
+  }
+  .tutor-panel button {
+    min-height: 44px;
+  }
+}

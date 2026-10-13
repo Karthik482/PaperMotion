@@ -5,6 +5,7 @@ import "./scenes.css";
 import "./themes.css";
 import "./refinement.css";
 import "./engine.css";
+import "./tutor.css";
 const editorial = localFont({
   src: "./fonts/Newsreader.ttf",
   variable: "--font-editorial",
