@@ -2,6 +2,7 @@ import type { Scene } from "../scenes/schemas";
 import {
   initialSceneState,
   maxSceneStep,
+  sceneControls,
   type SceneState,
 } from "../scenes/simulation";
 import { applyBatch, computedMetrics } from "./context";
@@ -127,20 +128,36 @@ export function defaultTimeline(
           ],
         });
     else if (controls.length) {
-      const key = controls[0];
-      frames.push({
-        durationMs: 1000,
-        caption:
-          "Inspect the current calculated output. Explore its parameters manually.",
-        actions: [
-          {
-            version: 1,
-            type: "set_parameter",
-            target: "scene",
-            payload: { key, value: state.parameters[key] },
-          },
-        ],
-      });
+      const key = scene.type === "vector-transform" ? "angle" : "x",
+        control = sceneControls(scene).find((c) => c.key === key)!;
+      const start =
+          scene.type === "vector-transform"
+            ? state.parameters.angle
+            : control.min,
+        end =
+          scene.type === "vector-transform"
+            ? Math.min(control.max, start + 90)
+            : control.max;
+      for (let i = 0; i <= 12; i++)
+        frames.push({
+          durationMs: 500,
+          caption:
+            scene.type === "vector-transform"
+              ? "Rotate the transformed vector; its components are computed from the matrix and angle."
+              : "Move across the domain and evaluate the configured function at the current input.",
+          actions: [
+            {
+              version: 1,
+              type: "set_parameter",
+              target: "scene",
+              payload: {
+                key,
+                value:
+                  Math.round((start + ((end - start) * i) / 12) * 1000) / 1000,
+              },
+            },
+          ],
+        });
     }
   }
   const timeline = { version: 1 as const, title: "Guided walkthrough", frames };

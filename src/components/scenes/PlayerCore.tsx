@@ -18,6 +18,8 @@ import { useSceneSession, type TutorBinding } from "./useSceneSession";
 import { createPortal } from "react-dom";
 import { TutorPanel } from "@/components/tutor/TutorPanel";
 import { sceneActionSchema } from "@/lib/scenes/actions";
+import { useWatch } from "./useWatch";
+import { WatchControls } from "./WatchControls";
 export function PlayerCore({
   scene,
   storageKey,
@@ -42,6 +44,7 @@ export function PlayerCore({
     max = maxSceneStep(scene, state),
     playing = !!state.playing;
   const canPlay = max > 0 && scene.type !== "probability";
+  const watch = useWatch(scene, session, reduced);
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(key) || "null");
@@ -78,6 +81,7 @@ export function PlayerCore({
     return () => clearInterval(timer);
   }, [playing, reduced, state.speed, signature]);
   function send(input: unknown) {
+    watch.manual();
     if (reduced && (input as { type?: string })?.type === "play") {
       setFeedback("Reduced motion is enabled. Use manual stepping.");
       return;
@@ -125,6 +129,32 @@ export function PlayerCore({
         <h3>{scene.title}</h3>
         <p>{scene.description}</p>
       </div>
+      <div
+        className="scene-learning-modes"
+        role="group"
+        aria-label="Learning mode"
+      >
+        <button
+          aria-pressed={watch.mode === "watch"}
+          onClick={() => watch.switchMode("watch")}
+        >
+          Watch
+        </button>
+        <button
+          aria-pressed={watch.mode === "explore"}
+          onClick={() => watch.switchMode("explore")}
+        >
+          Explore
+        </button>
+        <span>
+          {watch.mode === "watch"
+            ? "Follow a guided sequence"
+            : "Change the model yourself"}
+        </span>
+      </div>
+      {watch.mode === "watch" && (
+        <WatchControls watch={watch} reduced={reduced} />
+      )}
       <Renderer
         scene={scene}
         state={state}
@@ -350,8 +380,21 @@ export function PlayerCore({
             <TutorPanel
               binding={tutor}
               revision={session.revision}
-              capture={() => session.capture("explore")}
-              apply={session.apply}
+              capture={() => {
+                watch.pause();
+                return session.capture(watch.mode);
+              }}
+              apply={(proposal) => {
+                watch.manual();
+                const result = session.apply(proposal);
+                if (result.ok && proposal.afterState.playing)
+                  watch.switchMode("explore");
+                setFeedback(result.feedback);
+                return result;
+              }}
+              onAnimation={(proposal) =>
+                watch.explain(proposal.reply.animation || undefined)
+              }
               suggestions={[
                 "What assumptions are we making?",
                 "Why did the result change?",

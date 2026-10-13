@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { extendedSceneOptions } from "./extendedSchemas";
+import { timelineSchema } from "../tutor/schemas";
+import { validateTimeline } from "../tutor/timeline";
+import { initialSceneState } from "./simulation";
 
 const text = z.string().trim().min(1).max(1200);
 const number = (min: number, max: number) =>
@@ -16,7 +19,7 @@ const node = z
     description: text,
   })
   .strict();
-export const sceneSchema = z.discriminatedUnion("type", [
+export const baseSceneSchema = z.discriminatedUnion("type", [
   ...extendedSceneOptions,
   z
     .object({
@@ -146,11 +149,20 @@ export const sceneSchema = z.discriminatedUnion("type", [
     })
     .strict(),
 ]);
+const animatedOptions = baseSceneSchema.options.map((option) =>
+  option.extend({ watch: timelineSchema.nullable().optional() }),
+);
+export const sceneSchema = z.discriminatedUnion("type", [
+  animatedOptions[0],
+  ...animatedOptions.slice(1),
+]);
 export type Scene = z.infer<typeof sceneSchema>;
 export function validateScene(input: unknown): Scene {
   if (JSON.stringify(input)?.length > 32000)
     throw new Error("Scene exceeds size limit");
   const scene = sceneSchema.parse(input);
+  if (scene.watch)
+    validateTimeline(scene, initialSceneState(scene), scene.watch);
   if (
     scene.type === "historical-timeline" &&
     new Set(scene.config.eventIds).size !== scene.config.eventIds.length

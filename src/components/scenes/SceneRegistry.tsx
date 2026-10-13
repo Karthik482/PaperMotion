@@ -233,6 +233,7 @@ function DiagramScene({
       key={n.id}
       className={className}
       aria-pressed={selected.id === n.id}
+      data-tutor-highlight={state.highlighted?.includes(n.id) || undefined}
       onClick={() => onSelect(n.id)}
     >
       <span>{String(i + 1).padStart(2, "0")}</span>

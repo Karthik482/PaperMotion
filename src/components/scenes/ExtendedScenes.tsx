@@ -126,6 +126,9 @@ export function SchedulerScene({
               key={t.id}
               className={`task-${t.status}`}
               aria-pressed={state.selected === t.id}
+              data-tutor-highlight={
+                state.highlighted?.includes(t.id) || undefined
+              }
               onClick={() => onSelect(t.id)}
             >
               <span>Partition {i + 1}</span>
@@ -329,6 +332,9 @@ export function DnaScene({
           key={i}
           aria-pressed={selected === i}
           onClick={() => onSelect(`base-${i}`)}
+          data-tutor-highlight={
+            state.highlighted?.includes(`base-${i}`) || undefined
+          }
           aria-label={`Base ${i + 1}: ${base}`}
         >
           <span>{base}</span>
@@ -345,7 +351,13 @@ export function DnaScene({
         <div className="mechanism-progress">
           {m.stage.label} · {state.step + 1} / 5
         </div>
-        <div className="dna-duplex">
+        <div
+          className="dna-duplex"
+          data-tutor-highlight={
+            state.highlighted?.includes("dna-leading") || undefined
+          }
+          data-dna-actor="dna-leading"
+        >
           <span>Parental template 3′ → 5′</span>
           {strand(m.sequence, false)}
           {!m.opened && strand(m.complement, false)}
@@ -362,7 +374,13 @@ export function DnaScene({
           )}
         </div>
         {m.opened && (
-          <div className="replication-fork">
+          <div
+            className="replication-fork"
+            data-tutor-highlight={
+              state.highlighted?.includes("dna-fork") || undefined
+            }
+            data-dna-actor="dna-fork"
+          >
             <span className="fork-label">Replication fork opens →</span>
             {state.layers?.enzymes && (
               <div className="enzyme-labels">
@@ -375,7 +393,13 @@ export function DnaScene({
           </div>
         )}
         {m.opened && (
-          <div className="dna-duplex">
+          <div
+            className="dna-duplex"
+            data-tutor-highlight={
+              state.highlighted?.includes("dna-lagging") || undefined
+            }
+            data-dna-actor="dna-lagging"
+          >
             <span>Other parental template 5′ → 3′</span>
             {strand(m.complement, false)}
             {m.primed && !m.extended && (
@@ -468,6 +492,9 @@ export function TimelineScene({
             <button
               key={e.id}
               aria-pressed={e.id === selected.id}
+              data-tutor-highlight={
+                state.highlighted?.includes(e.id) || undefined
+              }
               onClick={() => onSelect(e.id)}
             >
               <time dateTime={e.date}>{e.date}</time>
@@ -546,6 +573,9 @@ export function DataScene({
               <td>
                 <button
                   aria-pressed={state.selected === r.id}
+                  data-tutor-highlight={
+                    state.highlighted?.includes(r.id) || undefined
+                  }
                   onClick={() => onSelect(r.id)}
                 >
                   {r.key}
@@ -664,6 +694,9 @@ export function SpatialScene({
             <button
               className="spatial-point"
               aria-pressed={p.id === selected.id}
+              data-tutor-highlight={
+                state.highlighted?.includes(p.id) || undefined
+              }
               onClick={() => onSelect(p.id)}
             >
               {p.label}
@@ -676,6 +709,9 @@ export function SpatialScene({
           <button
             key={p.id}
             aria-pressed={p.id === selected.id}
+            data-tutor-highlight={
+              state.highlighted?.includes(p.id) || undefined
+            }
             onClick={() => onSelect(p.id)}
           >
             {p.label}
@@ -764,6 +800,9 @@ export function IllustrationScene({
               <button
                 className="annotation-label"
                 aria-pressed={r.id === selected?.id}
+                data-tutor-highlight={
+                  state.highlighted?.includes(r.id) || undefined
+                }
                 onClick={() => onSelect(r.id)}
               >
                 {r.label}
@@ -777,6 +816,9 @@ export function IllustrationScene({
           <button
             key={r.id}
             aria-pressed={r.id === selected?.id}
+            data-tutor-highlight={
+              state.highlighted?.includes(r.id) || undefined
+            }
             onClick={() => onSelect(r.id)}
           >
             {r.label}
