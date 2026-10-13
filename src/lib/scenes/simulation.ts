@@ -10,6 +10,7 @@ export type SceneState = {
   view?: { zoom: number; x: number; y: number };
   speed?: number;
   playing?: boolean;
+  highlighted?: string[];
 };
 export type Control = {
   key: string;
@@ -265,6 +266,7 @@ export function initialSceneState(scene: Scene): SceneState {
     comparison:
       scene.type === "historical-timeline" ? scene.config.comparison : false,
     view: { zoom: 1, x: 0, y: 0 },
+    highlighted:[],
     speed: 1,
     playing: false,
   };

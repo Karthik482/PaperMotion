@@ -22,6 +22,7 @@ const sceneAction = <T extends string, P extends z.ZodType>(
     })
     .strict();
 export const sceneActionSchema = z.discriminatedUnion("type", [
+  sceneAction('highlight',z.object({ids:z.array(z.string().min(1).max(40)).min(1).max(6)}).strict()),
   sceneAction("select", z.object({ id: z.string().min(1).max(40) }).strict()),
   sceneAction(
     "set_parameter",
@@ -113,6 +114,7 @@ export const supportsView = (scene: Scene) =>
   ["concept-map", "spatial-explorer", "annotated-illustration"].includes(
     scene.type,
   );
+export function highlightableIds(scene:Scene,state:SceneState){return [...selectableIds(scene,state),...(scene.type==='dna-replication'?['dna-leading','dna-lagging','dna-fork']:[])];}
 export const supportsComparison = (scene: Scene) =>
   ["supply-demand", "task-scheduler", "historical-timeline"].includes(
     scene.type,
@@ -131,6 +133,10 @@ export function transition(
     next = structuredClone(state),
     max = maxSceneStep(scene, state);
   switch (action.type) {
+    case 'highlight':{
+      const ids=p.ids as string[];if(new Set(ids).size!==ids.length||ids.some(id=>!highlightableIds(scene,state).includes(id)))return fail('Unknown or duplicate highlight element.');
+      next.highlighted=ids;next.playing=false;break;
+    }
     case "set_parameter": {
       const control = sceneControls(scene).find((c) => c.key === p.key),
         value = p.value as number;
