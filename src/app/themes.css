@@ -1,0 +1,63 @@
+:root {
+  color-scheme: light;
+  --on-accent: #fff;
+  --success-soft: #edf4ee;
+  --danger-soft: #fcf0eb;
+  --warning: #806011;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-page: #1b1a17;
+  --surface-sheet: #22211d;
+  --surface-canvas: #25241f;
+  --surface-subtle: #302e28;
+  --text-primary: #f1eee7;
+  --text-secondary: #bcb7ad;
+  --line-subtle: #444139;
+  --line-control: #8e887c;
+  --accent: #eea286;
+  --accent-hover: #f4b59d;
+  --accent-soft: #3c2b24;
+  --on-accent: #211b17;
+  --success: #a0d4ac;
+  --danger: #ffad9a;
+  --success-soft: #25372a;
+  --danger-soft: #412b26;
+  --warning: #e1c787;
+}
+.research-primary,
+.lesson-footer .next-button,
+.tokens small {
+  color: var(--on-accent);
+}
+.research-error,
+.answer-options .incorrect {
+  background: var(--danger-soft);
+}
+.answer-options .correct,
+.paper-state.analyzed {
+  background: var(--success-soft);
+}
+.paper-state.analyzed {
+  border-color: var(--success);
+}
+.limitation-kind {
+  color: var(--warning);
+}
+.uncertainties,
+.extraction-warnings {
+  border-left-color: var(--warning);
+}
+.attention-graph path {
+  stroke: var(--accent);
+}
+.attention-graph circle,
+.position-viz circle {
+  fill: var(--accent);
+}
+.position-viz polyline {
+  stroke: var(--accent);
+}
+html[data-theme="dark"] .evidence-dialog::backdrop {
+  background: #080807a0;
+}
