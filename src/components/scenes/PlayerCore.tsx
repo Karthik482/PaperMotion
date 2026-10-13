@@ -3,7 +3,6 @@ import { useEffect, useId, useState } from "react";
 import { ArrowLeft, ArrowRight, Pause, Play, RotateCcw } from "lucide-react";
 import type { Scene } from "@/lib/scenes/schemas";
 import {
-  initialSceneState,
   maxSceneStep,
   restoreSceneState,
   sceneControls,
@@ -15,17 +14,21 @@ import {
 } from "@/lib/scenes/actions";
 import { useReducedMotion } from "@/components/layout/useReducedMotion";
 import { sceneRegistry, formatNumber } from "./SceneRegistry";
+import { useSceneSession, type TutorBinding } from './useSceneSession';
 export function PlayerCore({
   scene,
   storageKey,
   detailsTarget,
+  tutor,
 }: {
   scene: Scene;
   storageKey: string;
   detailsTarget?: HTMLElement | null;
+  tutor?: TutorBinding;
 }) {
-  const [state, setState] = useState(() => initialSceneState(scene)),
-    [ready, setReady] = useState(false),
+  const session=useSceneSession(scene,tutor);
+  const {state,setState}=session;
+  const [ready, setReady] = useState(false),
     [feedback, setFeedback] = useState("");
   const reduced = useReducedMotion(),
     uid = useId(),
@@ -74,8 +77,9 @@ export function PlayerCore({
       setFeedback("Reduced motion is enabled. Use manual stepping.");
       return;
     }
-    const result = transition(scene, state, input);
-    setState(result.state);
+    const before=session.ref.current;
+    const result = transition(scene, before, input);
+    if(result.ok)setState(result.state);
     setFeedback(result.feedback);
   }
   const action = (
