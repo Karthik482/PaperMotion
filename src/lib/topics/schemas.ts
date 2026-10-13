@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { computedExample } from "../scenes/output";
 import { sceneSchema, validateScene } from "../scenes/schemas";
+import { sceneProfiles } from "../scenes/profiles";
 export const topicInputSchema = z.object({
   topic: z
     .string()
@@ -35,7 +36,32 @@ export const topicPlanSchema = z.object({
         example: z.string().min(1),
         misconception: z.string().min(1),
         experience: z.object({
-          intent: z.object({objective:z.string().min(1).max(600),conceptType:z.string().min(1).max(120),family:z.enum(['mathematical','mechanism','data','network','timeline','spatial','economic','annotation']),manipulation:z.string().min(1).max(600),outcome:z.string().min(1).max(600),fidelity:z.enum(['exact','approximate','illustrative','source-backed'])}).strict().optional(),
+          intent: z
+            .object({
+              objective: z.string().min(1).max(600),
+              conceptType: z.string().min(1).max(120),
+              family: z.enum([
+                "mathematical",
+                "mechanism",
+                "data",
+                "network",
+                "timeline",
+                "spatial",
+                "economic",
+                "annotation",
+              ]),
+              manipulation: z.string().min(1).max(600),
+              outcome: z.string().min(1).max(600),
+              fidelity: z.enum([
+                "exact",
+                "approximate",
+                "illustrative",
+                "source-backed",
+              ]),
+            })
+            .strict()
+            .nullable()
+            .optional(),
           templateId: z.enum(topicTemplates),
           rationale: z.string().min(1),
           suggestedInteraction: z.string().min(1),
@@ -63,6 +89,7 @@ export type TopicRecord = {
   version: 1 | 2 | 3;
   level?: "beginner" | "technical";
   plan: TopicPlan;
+  reference?: boolean;
 };
 export type TopicSummary = {
   id: string;
@@ -125,5 +152,56 @@ export function validateInteractivePlan(
   }
   return plan;
 }
-export const universalPlanSchema=interactivePlanSchema.extend({steps:z.array(interactivePlanSchema.shape.steps.element.extend({experience:interactivePlanSchema.shape.steps.element.shape.experience.extend({intent:topicPlanSchema.shape.steps.element.shape.experience.shape.intent.unwrap()})})).min(3).max(7)});
-export function validateUniversalPlan(input:unknown,topic:string){const parsed=universalPlanSchema.parse(input);return validateInteractivePlan(parsed,topic);}
+export const universalPlanSchema = interactivePlanSchema
+  .extend({
+    steps: z
+      .array(
+        interactivePlanSchema.shape.steps.element
+          .extend({
+            experience: z.union(
+              sceneSchema.options.map((option) => {
+                const profile = sceneProfiles[option.shape.type.value];
+                return interactivePlanSchema.shape.steps.element.shape.experience
+                  .extend({
+                    scene: option,
+                    intent:
+                      topicPlanSchema.shape.steps.element.shape.experience.shape.intent
+                        .unwrap()
+                        .unwrap()
+                        .extend({
+                          family: z.enum(
+                            profile.families as [
+                              (typeof profile.families)[number],
+                              ...(typeof profile.families)[number][],
+                            ],
+                          ),
+                          fidelity: z.literal(profile.fidelity),
+                        }),
+                  })
+                  .strict();
+              }),
+            ),
+          })
+          .strict(),
+      )
+      .min(3)
+      .max(7),
+  })
+  .strict();
+export function validateUniversalPlan(input: unknown, topic: string) {
+  if (JSON.stringify(input).length > 120000)
+    throw new Error("Lesson specification exceeds its size limit");
+  const parsed = universalPlanSchema.parse(input);
+  for (const step of parsed.steps) {
+    const profile = sceneProfiles[step.experience.scene.type],
+      intent = step.experience.intent;
+    if (
+      !profile.families.includes(intent.family) ||
+      profile.fidelity !== intent.fidelity
+    )
+      throw new Error(
+        "Scene intent does not match the supported family or model fidelity",
+      );
+  }
+  return validateInteractivePlan(parsed, topic);
+}

@@ -1,5 +1,7 @@
 # PaperMotion
 
+Phase 3.5 adds a domain-aware engine with 15 trusted scene types, validated local actions, and five reference lessons available on the homepage without an API key. See [PHASE3.5.md](PHASE3.5.md) for capabilities, contracts, sources, verification and limits.
+
 The Phase 3.1 interface adds a fluid learning workspace, contextual explanation rail, larger selectable diagrams and an interactive homepage preview. See [PHASE3.1.md](PHASE3.1.md) for the change report, responsive verification and before/after comparisons.
 
 A local learning application: enter a topic to create an AI learning path, explore the Transformer lab, or learn from a PDF/arXiv paper.
@@ -17,6 +19,7 @@ Open the local URL printed in the terminal, normally http://localhost:3000. If N
 
 ```powershell
 npm test
+npm run lint
 npm run typecheck
 npm run build
 ```
@@ -25,7 +28,7 @@ npm run build
 
 Enter a topic or question, choose Beginner or Technical, and select **Create learning path**. The server-side planner generates 3–7 structured steps, each with a validated interactive scene. A separate model review must approve the plan before it is saved.
 
-The universal engine supports function plots, gradient descent, projectile motion, harmonic motion, binomial probability, vector transformations, process diagrams and concept maps. Numerical controls update deterministic calculations. Conceptual diagrams cover subjects outside the supported simulation models. Numerical worked examples come from the simulation engine rather than AI arithmetic.
+The universal engine supports function plots, gradient descent, projectile motion, harmonic motion, binomial probability, vector transformations, process diagrams, concept maps, task scheduling, supply/demand, DNA replication, audited Apollo timelines, data operations, Cartesian points and layered illustrations. Numerical controls update deterministic calculations; mechanism steps change illustrated structures. Conceptual diagrams cover subjects outside the supported models. Numerical worked examples come from the engine rather than AI arithmetic.
 
 Lessons live at `/learn/[id]`. Explore controls, select concepts, step through, play, replay and reset supported scenes. Current steps, explanation levels, scene controls and completed checks persist in your browser. Export JSON to obtain the lesson specification. Saved plans in `.papermotion/topics/` reopen without an API call. Cache keys include topic, learning level and engine version; existing lesson URLs remain valid. New lessons normally use two billable calls, and failed provider calls can incur charges.
 

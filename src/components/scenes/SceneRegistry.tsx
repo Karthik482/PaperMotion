@@ -3,15 +3,23 @@ import type { SceneState, Point } from "@/lib/scenes/simulation";
 import { sceneOutput } from "@/lib/scenes/output";
 import { createPortal } from "react-dom";
 import { useId } from "react";
-import { SchedulerScene,EconomyScene,DnaScene,TimelineScene,DataScene,SpatialScene,IllustrationScene } from './ExtendedScenes';
-import { Viewport } from './Viewport';
+import {
+  SchedulerScene,
+  EconomyScene,
+  DnaScene,
+  TimelineScene,
+  DataScene,
+  SpatialScene,
+  IllustrationScene,
+} from "./ExtendedScenes";
+import { Viewport } from "./Viewport";
 
 export type SceneProps = {
   scene: Scene;
   state: SceneState;
   onSelect: (id: string) => void;
   detailsTarget?: HTMLElement | null;
-  onAction?: (action:unknown)=>void;
+  onAction?: (action: unknown) => void;
 };
 export function formatNumber(value: number) {
   return Math.abs(value) >= 1e6 ||
@@ -174,7 +182,13 @@ function NumericalScene({ scene, state }: SceneProps) {
     </>
   );
 }
-function DiagramScene({ scene, state, onSelect, detailsTarget, onAction }: SceneProps) {
+function DiagramScene({
+  scene,
+  state,
+  onSelect,
+  detailsTarget,
+  onAction,
+}: SceneProps) {
   const markerId = useId().replaceAll(":", "");
   if (scene.type !== "concept-map" && scene.type !== "process-diagram")
     return null;
@@ -249,7 +263,12 @@ function DiagramScene({ scene, state, onSelect, detailsTarget, onAction }: Scene
           <p className="scene-interaction-hint">
             Select a concept to explore its connections.
           </p>
-          <Viewport state={state} onAction={onAction} height={height} label="Interactive concept relationships">
+          <Viewport
+            state={state}
+            onAction={onAction}
+            height={height}
+            label="Interactive concept relationships"
+          >
             <defs>
               <marker
                 id={markerId}
@@ -335,13 +354,13 @@ export const sceneRegistry: Record<
   Scene["type"],
   (props: SceneProps) => React.ReactNode
 > = {
-  'task-scheduler':SchedulerScene,
-  'supply-demand':EconomyScene,
-  'dna-replication':DnaScene,
-  'historical-timeline':TimelineScene,
-  'data-explorer':DataScene,
-  'spatial-explorer':SpatialScene,
-  'annotated-illustration':IllustrationScene,
+  "task-scheduler": SchedulerScene,
+  "supply-demand": EconomyScene,
+  "dna-replication": DnaScene,
+  "historical-timeline": TimelineScene,
+  "data-explorer": DataScene,
+  "spatial-explorer": SpatialScene,
+  "annotated-illustration": IllustrationScene,
   "function-plot": NumericalScene,
   "gradient-descent": NumericalScene,
   "projectile-motion": NumericalScene,

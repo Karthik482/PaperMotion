@@ -22,6 +22,7 @@ export function TopicHome() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [lessons, setLessons] = useState<TopicSummary[]>([]),
+    [references, setReferences] = useState<TopicSummary[]>([]),
     [ready, setReady] = useState<boolean | null>(null),
     [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -30,6 +31,7 @@ export function TopicHome() {
         const d = await r.json();
         if (!r.ok) throw new Error(d.error);
         setLessons(d.lessons);
+        setReferences(d.references || []);
         setReady(d.plannerReady);
       })
       .catch((e) => setError(e.message))
@@ -219,6 +221,31 @@ export function TopicHome() {
             <span>6 modules</span>
           </div>
         </aside>
+      </section>
+      <section
+        className="reference-lessons"
+        aria-label="Reference learning paths"
+      >
+        <div className="research-section-heading">
+          <div>
+            <span className="eyebrow">EXPLORE THE ENGINE</span>
+            <h2>Five ways to understand</h2>
+          </div>
+          <span>Ready to explore · no generation needed</span>
+        </div>
+        <div className="reference-grid">
+          {references.map((r, i) => (
+            <Link href={`/learn/${r.id}`} key={r.id} className="reference-link">
+              <span className="eyebrow">
+                {String(i + 1).padStart(2, "0")} / {r.domain}
+              </span>
+              <h3>{r.title}</h3>
+              <span>
+                Explore the reference lesson <ArrowUpRight size={16} />
+              </span>
+            </Link>
+          ))}
+        </div>
       </section>
       <section className="saved-topics">
         <div className="research-section-heading">

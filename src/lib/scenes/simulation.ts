@@ -1,13 +1,13 @@
 import type { Scene } from "./schemas";
-import { dataTrace, timelineEvents, schedule } from "./models";
+import { timelineEvents, schedule } from "./models";
 
 export type SceneState = {
   parameters: Record<string, number>;
   step: number;
   selected: string | null;
-  layers?: Record<string,boolean>;
+  layers?: Record<string, boolean>;
   comparison?: boolean;
-  view?: {zoom:number;x:number;y:number};
+  view?: { zoom: number; x: number; y: number };
   speed?: number;
   playing?: boolean;
 };
@@ -22,21 +22,96 @@ export type Control = {
 export type Point = { x: number; y: number };
 export const sceneControls = (scene: Scene): Control[] => {
   switch (scene.type) {
-    case 'task-scheduler': return [
-      {key:'partitions',label:'Dataset partitions',min:1,max:24,step:1},
-      {key:'executors',label:'Executor processes',min:1,max:6,step:1},
-      {key:'slots',label:'Slots per executor',min:1,max:4,step:1},
-      {key:'taskDuration',label:'Equal task duration',min:1,max:8,step:1,unit:'s'},
-    ];
-    case 'supply-demand': return [
-      {key:'demandIntercept',label:'Demand intercept',min:20,max:200,step:1},
-      {key:'demandSlope',label:'Demand slope',min:.1,max:5,step:.1},
-      {key:'supplyIntercept',label:'Supply intercept',min:0,max:100,step:1},
-      {key:'supplySlope',label:'Supply slope',min:.1,max:5,step:.1},
-      {key:'demandShift',label:'Demand shift',min:-50,max:50,step:1},
-      {key:'supplyShift',label:'Supply shift',min:-50,max:50,step:1},
-    ];
-    case 'data-explorer': return [{key:'threshold',label:'Filter threshold',min:-10000,max:10000,step:1},...scene.config.rows.map(r=>({key:`row-${r.id}`,label:`Value: ${r.key}`,min:-10000,max:10000,step:1}))].filter(c=>c.key!=='threshold'||scene.config.operation==='filter');
+    case "task-scheduler":
+      return [
+        {
+          key: "partitions",
+          label: "Dataset partitions",
+          min: 1,
+          max: 24,
+          step: 1,
+        },
+        {
+          key: "executors",
+          label: "Executor processes",
+          min: 1,
+          max: 6,
+          step: 1,
+        },
+        { key: "slots", label: "Slots per executor", min: 1, max: 4, step: 1 },
+        {
+          key: "taskDuration",
+          label: "Equal task duration",
+          min: 1,
+          max: 8,
+          step: 1,
+          unit: "s",
+        },
+      ];
+    case "supply-demand":
+      return [
+        {
+          key: "demandIntercept",
+          label: "Demand intercept",
+          min: 20,
+          max: 200,
+          step: 1,
+        },
+        {
+          key: "demandSlope",
+          label: "Demand slope",
+          min: 0.1,
+          max: 5,
+          step: 0.1,
+        },
+        {
+          key: "supplyIntercept",
+          label: "Supply intercept",
+          min: 0,
+          max: 100,
+          step: 1,
+        },
+        {
+          key: "supplySlope",
+          label: "Supply slope",
+          min: 0.1,
+          max: 5,
+          step: 0.1,
+        },
+        {
+          key: "demandShift",
+          label: "Demand shift",
+          min: -50,
+          max: 50,
+          step: 1,
+        },
+        {
+          key: "supplyShift",
+          label: "Supply shift",
+          min: -50,
+          max: 50,
+          step: 1,
+        },
+      ];
+    case "data-explorer":
+      return [
+        {
+          key: "threshold",
+          label: "Filter threshold",
+          min: -10000,
+          max: 10000,
+          step: 1,
+        },
+        ...scene.config.rows.map((r) => ({
+          key: `row-${r.id}`,
+          label: `Value: ${r.key}`,
+          min: -10000,
+          max: 10000,
+          step: 1,
+        })),
+      ].filter(
+        (c) => c.key !== "threshold" || scene.config.operation === "filter",
+      );
     case "function-plot":
       return [
         { key: "a", label: "Coefficient a", min: -10, max: 10, step: 0.1 },
@@ -161,31 +236,61 @@ export function initialSceneState(scene: Scene): SceneState {
   const parameters: Record<string, number> = {};
   for (const control of sceneControls(scene))
     parameters[control.key] =
-      control.key.startsWith('row-')&&scene.type==='data-explorer' ? scene.config.rows.find(r=>`row-${r.id}`===control.key)!.value :
-      control.key === "x" && scene.type === "function-plot"
-        ? (scene.config.xMin + scene.config.xMax) / 2
-        : Number(
-            (scene.config as unknown as Record<string, unknown>)[control.key],
-          );
+      control.key.startsWith("row-") && scene.type === "data-explorer"
+        ? scene.config.rows.find((r) => `row-${r.id}` === control.key)!.value
+        : control.key === "x" && scene.type === "function-plot"
+          ? (scene.config.xMin + scene.config.xMax) / 2
+          : Number(
+              (scene.config as unknown as Record<string, unknown>)[control.key],
+            );
   return {
     parameters,
     step: scene.type === "gradient-descent" ? scene.config.iterations : 0,
-    selected: scene.type==='historical-timeline'?timelineEvents(scene)[0].id:scene.type==='spatial-explorer'?scene.config.points[0].id:scene.type==='annotated-illustration'?scene.config.frames[0].visibleIds[0]:
-      scene.type === "concept-map" || scene.type === "process-diagram"
-        ? scene.config.nodes[0].id
-        : null,
-    layers: scene.type==='dna-replication'?{enzymes:scene.config.showEnzymes}:scene.type==='annotated-illustration'?Object.fromEntries(scene.config.regions.map(r=>[r.layer,true])):{},
-    comparison:scene.type==='historical-timeline'?scene.config.comparison:false,
-    view:{zoom:1,x:0,y:0},speed:1,playing:false,
+    selected:
+      scene.type === "historical-timeline"
+        ? timelineEvents(scene)[0].id
+        : scene.type === "spatial-explorer"
+          ? scene.config.points[0].id
+          : scene.type === "annotated-illustration"
+            ? scene.config.frames[0].visibleIds[0]
+            : scene.type === "concept-map" || scene.type === "process-diagram"
+              ? scene.config.nodes[0].id
+              : null,
+    layers:
+      scene.type === "dna-replication"
+        ? { enzymes: scene.config.showEnzymes }
+        : scene.type === "annotated-illustration"
+          ? Object.fromEntries(scene.config.regions.map((r) => [r.layer, true]))
+          : {},
+    comparison:
+      scene.type === "historical-timeline" ? scene.config.comparison : false,
+    view: { zoom: 1, x: 0, y: 0 },
+    speed: 1,
+    playing: false,
   };
 }
 export function maxSceneStep(scene: Scene, state: SceneState) {
   switch (scene.type) {
-    case 'task-scheduler': return schedule(state.parameters.partitions,state.parameters.executors,state.parameters.slots,state.parameters.taskDuration,scene.config.stages,0,scene.config.records).max;
-    case 'dna-replication': return 4;
-    case 'historical-timeline': return scene.config.eventIds.length-1;
-    case 'data-explorer': return scene.config.operation==='bubble-sort'?scene.config.rows.length*(scene.config.rows.length-1)/2:scene.config.rows.length;
-    case 'annotated-illustration': return scene.config.frames.length-1;
+    case "task-scheduler":
+      return schedule(
+        state.parameters.partitions,
+        state.parameters.executors,
+        state.parameters.slots,
+        state.parameters.taskDuration,
+        scene.config.stages,
+        0,
+        scene.config.records,
+      ).max;
+    case "dna-replication":
+      return 4;
+    case "historical-timeline":
+      return scene.config.eventIds.length - 1;
+    case "data-explorer":
+      return scene.config.operation === "bubble-sort"
+        ? (scene.config.rows.length * (scene.config.rows.length - 1)) / 2
+        : scene.config.rows.length;
+    case "annotated-illustration":
+      return scene.config.frames.length - 1;
     case "gradient-descent":
       return 60;
     case "projectile-motion":
@@ -225,12 +330,42 @@ export function restoreSceneState(scene: Scene, input: unknown): SceneState {
     scene.config.nodes.some((n) => n.id === value.selected)
   )
     state.selected = value.selected!;
-  const ids = scene.type==='historical-timeline'?scene.config.eventIds:scene.type==='spatial-explorer'?scene.config.points.map(p=>p.id):scene.type==='annotated-illustration'?scene.config.regions.map(p=>p.id):scene.type==='dna-replication'?Array.from({length:scene.config.sequence.length},(_,i)=>`base-${i}`):scene.type==='data-explorer'?scene.config.rows.map(r=>r.id):scene.type==='task-scheduler'?Array.from({length:state.parameters.partitions},(_,i)=>`task-${i}`):[];
-  if(ids.some(id=>id===value.selected))state.selected=value.selected!;
-  for(const id of Object.keys(state.layers||{}))if(typeof value.layers?.[id]==='boolean')state.layers![id]=value.layers[id];
-  if(typeof value.comparison==='boolean')state.comparison=value.comparison;
-  if(value.view&&[value.view.zoom,value.view.x,value.view.y].every(Number.isFinite)&&value.view.zoom>=1&&value.view.zoom<=3&&Math.abs(value.view.x)<=960&&Math.abs(value.view.y)<=960)state.view={...value.view};
-  if([.5,1,2].includes(value.speed!))state.speed=value.speed;
+  const ids =
+    scene.type === "historical-timeline"
+      ? scene.config.eventIds
+      : scene.type === "spatial-explorer"
+        ? scene.config.points.map((p) => p.id)
+        : scene.type === "annotated-illustration"
+          ? scene.config.regions.map((p) => p.id)
+          : scene.type === "dna-replication"
+            ? Array.from(
+                { length: scene.config.sequence.length },
+                (_, i) => `base-${i}`,
+              )
+            : scene.type === "data-explorer"
+              ? scene.config.rows.map((r) => r.id)
+              : scene.type === "task-scheduler"
+                ? Array.from(
+                    { length: state.parameters.partitions },
+                    (_, i) => `task-${i}`,
+                  )
+                : [];
+  if (ids.some((id) => id === value.selected)) state.selected = value.selected!;
+  for (const id of Object.keys(state.layers || {}))
+    if (typeof value.layers?.[id] === "boolean")
+      state.layers![id] = value.layers[id];
+  if (typeof value.comparison === "boolean")
+    state.comparison = value.comparison;
+  if (
+    value.view &&
+    [value.view.zoom, value.view.x, value.view.y].every(Number.isFinite) &&
+    value.view.zoom >= 1 &&
+    value.view.zoom <= 3 &&
+    Math.abs(value.view.x) <= 960 &&
+    Math.abs(value.view.y) <= 960
+  )
+    state.view = { zoom: value.view.zoom, x: value.view.x, y: value.view.y };
+  if ([0.5, 1, 2].includes(value.speed!)) state.speed = value.speed;
   return state;
 }
 export function evaluateFunction(

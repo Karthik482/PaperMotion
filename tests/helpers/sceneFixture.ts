@@ -133,6 +133,14 @@ export function interactiveFixture(): TopicPlan {
   ];
   plan.steps.forEach((step) => {
     step.experience.scene = sceneFixtures[6];
+    step.experience.intent = {
+      objective: step.title,
+      conceptType: "instruction cycle",
+      family: "mechanism",
+      manipulation: "Select or step through stages",
+      outcome: "Inspect fetch, decode and execute descriptions",
+      fidelity: "illustrative",
+    };
     step.experience.rationale =
       "Use a conceptual process to inspect the instruction cycle.";
     step.experience.suggestedInteraction =

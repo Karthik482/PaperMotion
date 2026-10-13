@@ -11,6 +11,7 @@ import {
 import path from "node:path";
 import { dataDirectory } from "@/lib/papers/storage";
 import { PaperError } from "@/lib/papers/errors";
+import { referenceLesson } from "./references";
 import {
   validateTopicPlan,
   validateInteractivePlan,
@@ -37,11 +38,14 @@ function file(id: string, ext = "json") {
   return path.join(/*turbopackIgnore: true*/ directory(), `${id}.${ext}`);
 }
 export async function getTopic(id: string): Promise<TopicRecord> {
+  const reference = referenceLesson(id);
+  if (reference) return reference;
   try {
     const record: TopicRecord = JSON.parse(
       await readFile(/*turbopackIgnore: true*/ file(id), "utf8"),
     );
-    if(record.version===3)record.plan=validateUniversalPlan(record.plan,record.topic);
+    if (record.version === 3)
+      record.plan = validateUniversalPlan(record.plan, record.topic);
     else if (record.version === 2)
       record.plan = validateInteractivePlan(record.plan, record.topic);
     else record.plan = validateTopicPlan(record.plan, record.topic);
@@ -53,7 +57,8 @@ export async function getTopic(id: string): Promise<TopicRecord> {
   }
 }
 export async function saveTopic(record: TopicRecord) {
-  if(record.version===3)record.plan=validateUniversalPlan(record.plan,record.topic);
+  if (record.version === 3)
+    record.plan = validateUniversalPlan(record.plan, record.topic);
   else if (record.version === 2)
     record.plan = validateInteractivePlan(record.plan, record.topic);
   else record.plan = validateTopicPlan(record.plan, record.topic);

@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { topicFixture } from "../helpers/topicFixture";
 import { interactiveFixture } from "../helpers/sceneFixture";
 import { topicId, saveTopic } from "../../src/lib/topics/storage";
 test("topic home accepts questions and explains missing-key failures", async ({
@@ -53,13 +52,13 @@ test("topic plan supports levels, steps, quizzes, honest coverage, progress and 
   request,
 }) => {
   const topic = "How does a CPU work?",
-    id = topicId(topic, "beginner", 2),
+    id = topicId(topic, "beginner", 3),
     plan = interactiveFixture();
   await saveTopic({
     id,
     topic,
     createdAt: new Date().toISOString(),
-    version: 2,
+    version: 3,
     level: "beginner",
     model: "test fixture",
     plan,

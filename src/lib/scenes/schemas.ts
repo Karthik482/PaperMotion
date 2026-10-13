@@ -148,18 +148,49 @@ export const sceneSchema = z.discriminatedUnion("type", [
 ]);
 export type Scene = z.infer<typeof sceneSchema>;
 export function validateScene(input: unknown): Scene {
-  if (JSON.stringify(input)?.length > 32000) throw new Error("Scene exceeds size limit");
+  if (JSON.stringify(input)?.length > 32000)
+    throw new Error("Scene exceeds size limit");
   const scene = sceneSchema.parse(input);
-  if(scene.type==='historical-timeline' && new Set(scene.config.eventIds).size!==scene.config.eventIds.length)throw new Error('Duplicate historical event');
-  if(scene.type==='data-explorer') {
-    if(new Set(scene.config.rows.map(r=>r.id)).size!==scene.config.rows.length || new Set(scene.config.lookup.map(r=>r.id)).size!==scene.config.lookup.length)throw new Error('Duplicate data row');
+  if (
+    scene.type === "historical-timeline" &&
+    new Set(scene.config.eventIds).size !== scene.config.eventIds.length
+  )
+    throw new Error("Duplicate historical event");
+  if (scene.type === "data-explorer") {
+    if (
+      new Set(scene.config.rows.map((r) => r.id)).size !==
+        scene.config.rows.length ||
+      new Set(scene.config.lookup.map((r) => r.id)).size !==
+        scene.config.lookup.length
+    )
+      throw new Error("Duplicate data row");
   }
-  if(scene.type==='spatial-explorer' || scene.type==='annotated-illustration') {
-    const entries=scene.type==='spatial-explorer'?scene.config.points:scene.config.regions;
-    const ids=new Set(entries.map(e=>e.id)); if(ids.size!==entries.length)throw new Error('Duplicate visual element');
-    if(scene.type==='annotated-illustration') {
-      for(const frame of scene.config.frames) if(new Set(frame.visibleIds).size!==frame.visibleIds.length||frame.visibleIds.some(id=>!ids.has(id)))throw new Error('Unknown illustration region');
-      for(const region of scene.config.regions)if(region.x-region.width/2<0||region.x+region.width/2>100||region.y-region.height/2<0||region.y+region.height/2>100)throw new Error('Illustration region outside canvas');
+  if (
+    scene.type === "spatial-explorer" ||
+    scene.type === "annotated-illustration"
+  ) {
+    const entries =
+      scene.type === "spatial-explorer"
+        ? scene.config.points
+        : scene.config.regions;
+    const ids = new Set(entries.map((e) => e.id));
+    if (ids.size !== entries.length)
+      throw new Error("Duplicate visual element");
+    if (scene.type === "annotated-illustration") {
+      for (const frame of scene.config.frames)
+        if (
+          new Set(frame.visibleIds).size !== frame.visibleIds.length ||
+          frame.visibleIds.some((id) => !ids.has(id))
+        )
+          throw new Error("Unknown illustration region");
+      for (const region of scene.config.regions)
+        if (
+          region.x - region.width / 2 < 0 ||
+          region.x + region.width / 2 > 100 ||
+          region.y - region.height / 2 < 0 ||
+          region.y + region.height / 2 > 100
+        )
+          throw new Error("Illustration region outside canvas");
     }
   }
   if (scene.type === "function-plot" && scene.config.xMin >= scene.config.xMax)
@@ -193,13 +224,20 @@ export function validateScene(input: unknown): Scene {
 }
 
 export const sceneCapabilities = {
-  "task-scheduler":"Simplified Spark-style execution: partitions become one task per stage, driver schedules equal-duration tasks over executors×slots, stage barriers, no shuffle overhead or failures. Vary partitions, executor count, slots, task duration; step through waves. Distinguish DataFrame/RDD programming abstractions from driver/cluster manager/executor runtime actors.",
-  "supply-demand":"Illustrative linear inverse curves P_d=a-bQ+shiftD and P_s=c+dQ+shiftS. Vary intercepts, slopes and shifts. Solve nonnegative equilibrium or report no feasible intersection. Compare configured baseline. Not economic forecasting.",
-  "dna-replication":"Authored five-stage local DNA fork mechanism: parent, separation, primers, 5′→3′ extension with leading/lagging strands, primer replacement and ligation. Select bases, toggle enzyme layer; fixed trusted biology, not molecular dynamics. ACGT sequence 6–16 bases.",
-  "historical-timeline":"Source-backed Apollo chronology ONLY. Pick audited eventIds; dates, descriptions and NASA evidence are supplied by the engine. Select events, compare Earth-orbit/lunar tracks and elapsed days. No arbitrary history citations or unsupported causal claims.",
-  "data-explorer":"Bounded editable numerical rows. Exact filter value>=threshold, key-based SQL LEFT JOIN including multiple matches/nulls, or bubble-sort adjacent-comparison trace. Select rows, change threshold/value, step through intermediate output. No executable SQL or arbitrary programs.",
-  "spatial-explorer":"Select points on an illustrative Cartesian coordinate plane, compare Euclidean distances, zoom/pan/fit. Coordinates -100..100, supplied units. NOT a geographical map, anatomical measurement or historical border reconstruction.",
-  "annotated-illustration":"Trusted rectangles/ellipses with bounded normalized positions, labels, inspectable regions, visible layers and authored frames. Useful schematic fallback for biology, engineering or humanities; NEVER imply scientifically accurate anatomy or geographic boundaries.",
+  "task-scheduler":
+    "Simplified Spark-style execution: partitions become one task per stage, driver schedules equal-duration tasks over executors×slots, stage barriers, no shuffle overhead or failures. Vary partitions, executor count, slots, task duration; step through waves. Distinguish DataFrame/RDD programming abstractions from driver/cluster manager/executor runtime actors.",
+  "supply-demand":
+    "Illustrative linear inverse curves P_d=a-bQ+shiftD and P_s=c+dQ+shiftS. Vary intercepts, slopes and shifts. Solve nonnegative equilibrium or report no feasible intersection. Compare configured baseline. Not economic forecasting.",
+  "dna-replication":
+    "Authored five-stage local DNA fork mechanism: parent, separation, primers, 5′→3′ extension with leading/lagging strands, primer replacement and ligation. Select bases, toggle enzyme layer; fixed trusted biology, not molecular dynamics. ACGT sequence 6–16 bases.",
+  "historical-timeline":
+    "Source-backed Apollo chronology ONLY. Pick audited eventIds; dates, descriptions and NASA evidence are supplied by the engine. Select events, compare Earth-orbit/lunar tracks and elapsed days. No arbitrary history citations or unsupported causal claims.",
+  "data-explorer":
+    "Bounded editable numerical rows. Exact filter value>=threshold, key-based SQL LEFT JOIN including multiple matches/nulls, or bubble-sort adjacent-comparison trace. Select rows, change threshold/value, step through intermediate output. No executable SQL or arbitrary programs.",
+  "spatial-explorer":
+    "Select points on an illustrative Cartesian coordinate plane, compare Euclidean distances, zoom/pan/fit. Coordinates -100..100, supplied units. NOT a geographical map, anatomical measurement or historical border reconstruction.",
+  "annotated-illustration":
+    "Trusted rectangles/ellipses with bounded normalized positions, labels, inspectable regions, visible layers and authored frames. Useful schematic fallback for biology, engineering or humanities; NEVER imply scientifically accurate anatomy or geographic boundaries.",
   "function-plot":
     "Select x and vary a, b, c. Only quadratic a*x²+b*x+c, a*sin(b*x)+c, a*exp(b*x)+c, or a/(1+exp(-b*x))+c. Display configured axis labels. No arbitrary expressions.",
   "gradient-descent":

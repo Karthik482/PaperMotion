@@ -9,6 +9,7 @@ import {
   withTopicLock,
 } from "@/lib/topics/storage";
 import { planTopic } from "@/lib/topics/planner";
+import { referenceSummaries } from "@/lib/topics/references";
 export const runtime = "nodejs";
 export const maxDuration = 420;
 export async function GET() {
@@ -16,6 +17,7 @@ export async function GET() {
     return Response.json(
       {
         lessons: await listTopics(),
+        references: referenceSummaries,
         plannerReady: !!process.env.OPENAI_API_KEY?.trim(),
       },
       { headers: { "Cache-Control": "no-store" } },
@@ -42,7 +44,12 @@ export async function POST(request: Request) {
       } catch (e) {
         if (!(e instanceof PaperError && e.status === 404)) throw e;
       }
-      const lesson = await planTopic(topic, id, level,engineVersion===3?3:2);
+      const lesson = await planTopic(
+        topic,
+        id,
+        level,
+        engineVersion === 3 ? 3 : 2,
+      );
       await saveTopic(lesson);
       return Response.json({ lesson, cached: false }, { status: 201 });
     });

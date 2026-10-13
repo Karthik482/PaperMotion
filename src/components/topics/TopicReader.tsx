@@ -399,16 +399,19 @@ export function TopicReader({ id }: { id: string }) {
             <details className="topic-plan-limitations">
               <summary>Scope and limitations of this lesson</summary>
               <ul>
-                {lesson.plan.limitations.map((l) => (
-                  <li key={l}>{l}</li>
+                {lesson.plan.limitations.map((l, i) => (
+                  <li key={`${i}:${l}`}>{l}</li>
                 ))}
               </ul>
             </details>
           )}
           <div className="reader-provenance">
-            Saved lesson · {lesson.model} · plan v{lesson.version} · reopening
-            makes no API calls. AI explanations are not verified against
-            sources; planning and review can still contain errors.
+            {lesson.reference ? "Authored reference lesson" : "Saved lesson"} ·{" "}
+            {lesson.model} · plan v{lesson.version} · reopening makes no API
+            calls.{" "}
+            {lesson.reference
+              ? "Models are simplified; source links and assumptions appear with each scene."
+              : "AI explanations are not verified against sources; planning and review can still contain errors."}
           </div>
         </>
       )}

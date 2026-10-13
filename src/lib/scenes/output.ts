@@ -1,4 +1,5 @@
 import type { Scene } from "./schemas";
+import { equilibrium, schedule, dataTrace } from "./models";
 import {
   binomial,
   evaluateFunction,
@@ -13,6 +14,43 @@ import {
 } from "./simulation";
 export function computedExample(scene: Scene): string | null {
   const state = initialSceneState(scene);
+  if (scene.type === "task-scheduler") {
+    const c = scene.config,
+      m = schedule(
+        c.partitions,
+        c.executors,
+        c.slots,
+        c.taskDuration,
+        c.stages,
+        0,
+        c.records,
+      );
+    return `Starting model: ${c.partitions} partitions, ${m.capacity} parallel slots, ${m.waves} waves per stage, ${c.stages} stages, ${c.taskDuration} s per equal-duration task. Estimated time = ${m.estimatedTime} s; final sum of records 1–${c.records} = ${(c.records * (c.records + 1)) / 2}. This is a toy estimate with no shuffle or network overhead.`;
+  }
+  if (scene.type === "supply-demand") {
+    const c = scene.config,
+      m = equilibrium(
+        c.demandIntercept,
+        c.demandSlope,
+        c.supplyIntercept,
+        c.supplySlope,
+        c.demandShift,
+        c.supplyShift,
+      );
+    return m.feasible
+      ? `Computed intersection at the starting settings: quantity = ${Number(m.quantity.toFixed(8))}, price = ${Number(m.price.toFixed(8))}. These are illustrative units, not observed market data. Change assumptions to recompute both curves.`
+      : "The starting equations have no intersection in the nonnegative price and quantity domain. Change the assumptions to inspect a feasible model.";
+  }
+  if (scene.type === "data-explorer") {
+    const m = dataTrace(scene, {
+      ...state,
+      step:
+        scene.config.operation === "bubble-sort"
+          ? (scene.config.rows.length * (scene.config.rows.length - 1)) / 2
+          : scene.config.rows.length,
+    });
+    return `Starting rows, run to completion: ${m.output.length} output rows. ${scene.config.operation === "bubble-sort" ? `Sorted values: ${m.output.map((r) => r.value).join(", ")}.` : scene.config.operation === "left-join" ? "Unmatched left keys have SQL NULL; duplicate right matches expand output rows." : `The filter retains values ≥ ${scene.config.threshold}.`} Changing an input resets the trace.`;
+  }
   const output = sceneOutput(scene, state);
   if (!output) return null;
   const number = (value: number) =>
@@ -123,8 +161,7 @@ export function sceneOutput(
       };
     }
     case "projectile-motion": {
-      const c = scene.config,
-        end = projectile(p.speed, p.angle, p.gravity, p.height, 0),
+      const end = projectile(p.speed, p.angle, p.gravity, p.height, 0),
         t = (end.flightTime * state.step) / 100,
         at = projectile(p.speed, p.angle, p.gravity, p.height, t);
       return {
