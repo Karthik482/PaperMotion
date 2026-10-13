@@ -18,7 +18,9 @@ import type {
 } from "@/lib/papers/schemas";
 import { ExplanationSwitch } from "@/components/layout/ExplanationSwitch";
 import { PaperShell } from "./PaperShell";
+import { PaperTutor } from "@/components/tutor/PaperTutor";
 export function PaperReader({ id }: { id: string }) {
+  const [tutorConcept, setTutorConcept] = useState("summary");
   const [paper, setPaper] = useState<PaperRecord | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -291,6 +293,12 @@ export function PaperReader({ id }: { id: string }) {
                 )}
               </section>
               <aside className="analysis-notes">
+                <PaperTutor
+                  key={`${id}:${tutorConcept}`}
+                  paper={paper}
+                  conceptId={tutorConcept}
+                  level={mode}
+                />
                 <span className="eyebrow">FOLLOW THE EVIDENCE</span>
                 <h3>Understanding starts at the source.</h3>
                 <p>
@@ -331,6 +339,15 @@ export function PaperReader({ id }: { id: string }) {
                       <h3>{c.name}</h3>
                       <p>{c[mode]}</p>
                       {citations(c.evidence)}
+                      <button
+                        onClick={() => {
+                          setTutorConcept(c.id);
+                          setTab("analysis");
+                        }}
+                        className="text-link"
+                      >
+                        Ask about this concept
+                      </button>
                     </article>
                   );
                 })}

@@ -40,7 +40,7 @@ export function TutorPanel({
     generation = useRef(0),
     lastQuestion = useRef(""),
     uid = useId();
-  const key = `tutor-memory:v1:${binding.kind}:${binding.lessonId}:${binding.sceneId}`;
+  const key = `tutor-memory:v1:${binding.kind}:${binding.lessonId}`;
   useEffect(() => {
     try {
       const saved = memorySchema.safeParse(

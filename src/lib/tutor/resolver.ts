@@ -1,8 +1,8 @@
 import { getTopic } from "../topics/storage";
 import { getPaper } from "../papers/storage";
-import { validateAnalysis, type PaperRecord } from "../papers/schemas";
+import { validateAnalysis } from "../papers/schemas";
 import { legacyDiagram } from "../scenes/fallback";
-import type { Scene } from "../scenes/schemas";
+
 import { initialSceneState } from "../scenes/simulation";
 import {
   sceneSources,
@@ -14,26 +14,7 @@ import {
 import type { TutorRequest, TutorSource } from "./schemas";
 import { fingerprint } from "./schemas";
 import { TutorError } from "./provider";
-export function paperTutorScene(paper: PaperRecord): Scene {
-  const concepts = paper.analysis?.result.concepts || [];
-  return {
-    type: "process-diagram",
-    title: "Paper concepts",
-    description: "Evidence-backed concept reading order; not a simulation.",
-    assumptions: [
-      "This paper view explains extracted evidence; no visualization actions are available.",
-    ],
-    config: {
-      nodes: concepts
-        .slice(0, 7)
-        .map((c) => ({
-          id: c.id.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 32),
-          label: c.name.slice(0, 80),
-          description: c.beginner.slice(0, 1000),
-        })),
-    },
-  };
-}
+import { paperTutorScene } from "./paperScene";
 export async function resolveContext(request: TutorRequest) {
   if (request.kind === "paper") {
     const paper = await getPaper(request.lessonId);

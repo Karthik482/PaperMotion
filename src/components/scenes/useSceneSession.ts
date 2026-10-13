@@ -1,10 +1,16 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Scene } from "@/lib/scenes/schemas";
 import { initialSceneState, type SceneState } from "@/lib/scenes/simulation";
 import type { SceneAction } from "@/lib/scenes/actions";
 import { commitProposal, type TutorProposal } from "@/lib/tutor/proposal";
-import { fingerprint, type TutorRequest } from "@/lib/tutor/schemas";
+import {
+  experimentSchema,
+  fingerprint,
+  type TutorRequest,
+} from "@/lib/tutor/schemas";
+import { applyBatch, validatedState } from "@/lib/tutor/context";
+import { z } from "zod";
 export type TutorBinding = {
   kind: "topic" | "paper";
   lessonId: string;
@@ -21,12 +27,34 @@ export type SceneSnapshot = {
 };
 // Update the ref synchronously, before React renders, so late answers cannot
 // overwrite a slider movement or an animation frame from the same event loop.
-export function useSceneSession(scene: Scene, binding?: TutorBinding) {
+export function useSceneSession(
+  scene: Scene,
+  binding?: TutorBinding,
+  storageKey?: string,
+) {
   const [state, renderState] = useState(() => initialSceneState(scene)),
     ref = useRef(state),
     revisionRef = useRef(0);
   const [revision, renderRevision] = useState(0),
     experiments = useRef<TutorRequest["experiments"]>([]);
+  const experimentKey = `scene-experiments:v1:${storageKey}`;
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const saved = z
+        .array(experimentSchema)
+        .max(3)
+        .parse(JSON.parse(localStorage.getItem(experimentKey) || "[]"));
+      experiments.current = saved.filter(
+        (e) =>
+          fingerprint(
+            applyBatch(scene, validatedState(scene, e.before), e.actions),
+          ) === fingerprint(e.after),
+      );
+    } catch {
+      experiments.current = [];
+    }
+  }, [experimentKey]);
   function setState(next: SceneState | ((state: SceneState) => SceneState)) {
     const value = typeof next === "function" ? next(ref.current) : next;
     ref.current = value;
@@ -43,11 +71,18 @@ export function useSceneSession(scene: Scene, binding?: TutorBinding) {
     experiments.current = [
       ...experiments.current,
       {
-        before: structuredClone(before),
+        before: { ...structuredClone(before), playing: false },
         after: structuredClone(after),
         actions,
       },
     ].slice(-3);
+    if (storageKey)
+      try {
+        localStorage.setItem(
+          experimentKey,
+          JSON.stringify(experiments.current),
+        );
+      } catch {}
   }
   function apply(proposal: TutorProposal) {
     if (!binding)

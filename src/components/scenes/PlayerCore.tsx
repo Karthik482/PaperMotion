@@ -33,7 +33,7 @@ export function PlayerCore({
   tutor?: TutorBinding;
   tutorTarget?: HTMLElement | null;
 }) {
-  const session = useSceneSession(scene, tutor);
+  const session = useSceneSession(scene, tutor, storageKey);
   const { state, setState } = session;
   const [ready, setReady] = useState(false),
     [feedback, setFeedback] = useState("");

@@ -73,18 +73,20 @@ export function planCandidate(
     throw new Error(
       "Numerical claims must use computed results, not generated prose",
     );
-  const before = computedMetrics(scene, state),
-    after = computedMetrics(scene, afterState);
+  const before = readOnly ? [] : computedMetrics(scene, state),
+    after = readOnly ? [] : computedMetrics(scene, afterState);
   return {
     reply,
     afterState,
     before,
     after,
-    resultText: actions.length
-      ? comparisonText(before, after)
-      : before
-          .map((m) => `${m.label}: ${m.value}${m.unit ? " " + m.unit : ""}`)
-          .join("\n"),
+    resultText: readOnly
+      ? "Evidence-backed reading context; no simulation is run."
+      : actions.length
+        ? comparisonText(before, after)
+        : before
+            .map((m) => `${m.label}: ${m.value}${m.unit ? " " + m.unit : ""}`)
+            .join("\n"),
   };
 }
 export function commitProposal(
