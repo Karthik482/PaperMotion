@@ -388,7 +388,7 @@ export function PlayerCore({
                 watch.manual();
                 const result = session.apply(proposal);
                 if (result.ok && proposal.afterState.playing)
-                  watch.switchMode("explore");
+                  watch.runSimulation();
                 setFeedback(result.feedback);
                 return result;
               }}

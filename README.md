@@ -1,5 +1,7 @@
 # PaperMotion
 
+Phase 4 adds a contextual visual tutor and guided Watch timelines. Open a reference lesson, choose **Watch** or **Explore**, and ask a question in the right rail. AI proposals wait for **Apply to scene**; calculations and playback run locally. See [PHASE4.md](PHASE4.md) for architecture, verification, checkpoints and remaining limits.
+
 Phase 3.5 adds a domain-aware engine with 15 trusted scene types, validated local actions, and five reference lessons available on the homepage without an API key. See [PHASE3.5.md](PHASE3.5.md) for capabilities, contracts, sources, verification and limits.
 
 The Phase 3.1 interface adds a fluid learning workspace, contextual explanation rail, larger selectable diagrams and an interactive homepage preview. See [PHASE3.1.md](PHASE3.1.md) for the change report, responsive verification and before/after comparisons.
@@ -36,7 +38,19 @@ Use the navigation's theme toggle to switch between light and dark mode. The ini
 
 See [PHASE3.md](PHASE3.md) for the architecture, scene contracts, equations, assumptions, extension workflow and verification. Model-knowledge lessons are not verified against retrieved sources; paper analysis remains the evidence-backed entry point. No generated JavaScript, HTML or arbitrary expressions execute.
 
-The original lesson lives at `/lessons/transformer` (optional `?module=0` through `5`). Conversational tutoring that changes the active visualization remains Phase 4.
+The original lesson lives at `/lessons/transformer` (optional `?module=0` through `5`). Its original controls remain intact; conversational visual actions are available in the universal `/learn/[id]` player.
+
+## Watch, Explore and Ask
+
+Watch drives bounded, validated timelines through the same state and trusted transitions as manual controls. Pause, step, replay and adjust speed without a model request. Reduced motion uses manual frames. Switching modes pauses and preserves the current model; replay restarts the sequence with its current parameters.
+
+Ask sends a compact current context to `/api/tutor`: lesson/scene identity, current parameters, selected elements, computed results, explanation level, bounded conversation and recent verified experiments. The server resolves configurations and evidence itself. It returns a complete validated proposal with deterministic before/after metrics. Apply rechecks the scene revision and state before committing. Changing a control while a reply is pending expires its actions.
+
+Conversations persist per lesson in this browser; recent experiments persist per scene. Clear conversation cancels a pending request and preserves model settings. Source links and exact extracted excerpts appear when available. Analyzed papers have a read-only evidence tutor; concept cards can focus that conversation. No paper simulation is invented.
+
+Set `OPENAI_API_KEY` in `.env.local` and restart the app for real tutoring. Optional tutor-specific key, model, compatible base URL and cost-rate settings are documented in `.env.example`. The default is the official OpenAI Responses API with structured outputs; FreeLLMAPI is not required. Token usage is shown; a cost estimate appears only when both current model rates are configured. Asking may incur provider charges; reopening a lesson, manipulating controls and playing timelines do not call the model.
+
+Run browser checks with `npx playwright test` after installing Chromium with `npx playwright install chromium`. Tests use an explicit local fake provider and isolated data, with no live AI charges. Windows tests run serially because fixtures share local saved records.
 
 ## Understand a paper
 

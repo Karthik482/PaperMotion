@@ -385,7 +385,15 @@ export function restoreSceneState(scene: Scene, input: unknown): SceneState {
     new Set(value.highlighted).size === value.highlighted.length &&
     value.highlighted.every((id) => highlightIds.includes(id))
   )
-    state.highlighted = [...value.highlighted];
+    state.highlighted = value.highlighted.filter(
+      (id) =>
+        scene.type !== "dna-replication" ||
+        (id === "dna-leading" || id === "dna-lagging"
+          ? state.step >= 3
+          : id === "dna-fork"
+            ? state.step >= 1
+            : true),
+    );
   return state;
 }
 export function evaluateFunction(

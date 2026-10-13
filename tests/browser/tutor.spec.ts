@@ -80,6 +80,9 @@ for (const [index, lesson] of referenceLessons.entries())
           .getByRole("navigation", { name: "Learning steps" })
           .locator("button[aria-current=step]"),
       ).not.toContainText(lesson.plan.steps[0].title);
+      await expect(panel.locator(".tutor-transcript")).toContainText(
+        "Opening the requested lesson step",
+      );
     }
     await ask(page, "Why did that happen?");
     await expect(panel.locator(".tutor-results")).toContainText(
@@ -133,10 +136,13 @@ for (const [index, lesson] of referenceLessons.entries())
         [390, 844],
       ]) {
         await page.setViewportSize({ width: size[0], height: size[1] });
-        await page.evaluate((t) => {
-          document.documentElement.dataset.theme = t;
-          localStorage.setItem("papermotion-theme", t);
-        }, theme);
+        if ((await page.locator("html").getAttribute("data-theme")) !== theme)
+          await page
+            .getByRole("button", {
+              name: `Switch to ${theme} mode`,
+              exact: true,
+            })
+            .click();
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,

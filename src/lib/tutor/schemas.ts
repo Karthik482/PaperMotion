@@ -9,7 +9,10 @@ export const stateSchema = z
       .refine((p) => Object.keys(p).length <= 16),
     step: z.number().int().min(0).max(1152),
     selected: z.string().max(40).nullable(),
-    layers: z.record(z.string().max(32), z.boolean()).optional(),
+    layers: z
+      .record(z.string().max(32), z.boolean())
+      .refine((p) => Object.keys(p).length <= 12)
+      .optional(),
     comparison: z.boolean().optional(),
     view: z
       .object({

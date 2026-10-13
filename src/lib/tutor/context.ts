@@ -21,7 +21,12 @@ import {
   timelineEvents,
   spatialDistance,
 } from "../scenes/models";
-import { dnaSource, economicSource, sparkSource } from "../scenes/catalog";
+import {
+  dnaSource,
+  dnaStages,
+  economicSource,
+  sparkSource,
+} from "../scenes/catalog";
 import { sceneProfiles } from "../scenes/profiles";
 import { fingerprint, type TutorSource } from "./schemas";
 export type Metric = { label: string; value: number | string; unit?: string };
@@ -171,6 +176,33 @@ export function capabilityManifest(
     speed: [0.5, 1, 2],
     view: supportsView(scene),
     assumptions: scene.assumptions,
+    actionSemantics: {
+      reset:
+        "Restore all original configured parameters and the original step. Do not use after a parameter change.",
+      replay:
+        "Return to the first step while retaining current parameters; does not autoplay.",
+      set_parameter:
+        "Update a supported parameter; re-evaluate locally and pause playback.",
+      navigate_scene:
+        "Change to another known lesson step, without modifying its state. Must be the only action.",
+    },
+    orderedSteps:
+      scene.type === "dna-replication"
+        ? dnaStages.map((s, step) => ({ step, ...s }))
+        : scene.type === "historical-timeline"
+          ? timelineEvents(scene).map((e, step) => ({
+              step,
+              id: e.id,
+              label: e.label,
+              date: e.date,
+            }))
+          : scene.type === "process-diagram"
+            ? scene.config.nodes.map((n, step) => ({
+                step,
+                id: n.id,
+                label: n.label,
+              }))
+            : [],
   };
 }
 export function validatedState(scene: Scene, input: SceneState) {

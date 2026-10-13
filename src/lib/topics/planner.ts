@@ -7,9 +7,9 @@ import { sceneCapabilities } from "../scenes/schemas";
 import { sceneProfiles } from "../scenes/profiles";
 import { historicalEvents } from "../scenes/catalog";
 import {
-  interactivePlanSchema,
+  interactivePlannerSchema,
   validateInteractivePlan,
-  universalPlanSchema,
+  universalPlannerSchema,
   validateUniversalPlan,
   type TopicRecord,
 } from "./schemas";
@@ -55,7 +55,7 @@ export async function planTopic(
       ],
       text: {
         format: zodTextFormat(
-          version === 3 ? universalPlanSchema : interactivePlanSchema,
+          version === 3 ? universalPlannerSchema : interactivePlannerSchema,
           "topic_lesson_plan",
         ),
       },

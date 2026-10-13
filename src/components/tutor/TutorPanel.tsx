@@ -5,6 +5,7 @@ import type {
   SceneSnapshot,
 } from "@/components/scenes/useSceneSession";
 import type { TutorProposal } from "@/lib/tutor/proposal";
+import type { TutorSource } from "@/lib/tutor/schemas";
 import {
   appendTurn,
   memorySchema,
@@ -19,6 +20,7 @@ export function TutorPanel({
   onAnimation,
   suggestions,
   readOnly = false,
+  onSource,
 }: {
   binding: TutorBinding;
   revision: number;
@@ -27,6 +29,7 @@ export function TutorPanel({
   onAnimation?: (p: TutorProposal) => void;
   suggestions: string[];
   readOnly?: boolean;
+  onSource?: (s: TutorSource) => void;
 }) {
   const [memory, setMemory] = useState<TutorMemory>({ turns: [], summary: "" }),
     [ready, setReady] = useState(false),
@@ -36,10 +39,16 @@ export function TutorPanel({
     [error, setError] = useState(""),
     [proposal, setProposal] = useState<TutorProposal | null>(null),
     [applied, setApplied] = useState(false);
+  const [appliedRevision, setAppliedRevision] = useState<number | null>(null);
   const requestRef = useRef<AbortController | null>(null),
     generation = useRef(0),
     lastQuestion = useRef(""),
     uid = useId();
+  const transcript = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (transcript.current)
+      transcript.current.scrollTop = transcript.current.scrollHeight;
+  }, [memory]);
   const key = `tutor-memory:v1:${binding.kind}:${binding.lessonId}`;
   useEffect(() => {
     try {
@@ -152,20 +161,27 @@ export function TutorPanel({
       }
     }
   }
-  const stale = !!proposal && proposal.revision !== revision && !applied;
+  const stale =
+    !!proposal &&
+    proposal.revision !== revision &&
+    !(applied && appliedRevision === revision);
   function accept() {
     if (!proposal) return;
     const result = apply(proposal);
     setStatus(result.feedback);
     if (result.ok) {
       setApplied(true);
-      setMemory((m) =>
-        appendTurn(m, {
-          role: "assistant",
-          sceneId: binding.sceneId,
-          text: result.feedback.slice(0, 5000),
-        }),
-      );
+      setAppliedRevision(revision + 1);
+      const next = appendTurn(memory, {
+        role: "assistant",
+        sceneId: binding.sceneId,
+        text: result.feedback.slice(0, 5000),
+      });
+      setMemory(next);
+      // Navigation can unmount this panel before its persistence effect runs.
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
     }
   }
   const questions = proposal?.reply.suggestions.length
@@ -182,7 +198,15 @@ export function TutorPanel({
           : "Ask why, try a different assumption, or explore the selected element. Changes are computed locally."}
       </p>
       {memory.turns.length > 0 && (
-        <div className="tutor-transcript" aria-label="Conversation history">
+        <div
+          className="tutor-transcript"
+          aria-label="Conversation history"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          tabIndex={0}
+          ref={transcript}
+        >
           {memory.turns.slice(-8).map((turn, i) => (
             <article
               key={`${i}:${turn.text.slice(0, 20)}`}
@@ -269,15 +293,25 @@ export function TutorPanel({
               <summary>Sources · {proposal.sources.length}</summary>
               {proposal.sources.map((s) => (
                 <div key={s.id}>
-                  <a
-                    href={s.url}
-                    target={
-                      s.url?.startsWith("https://") ? "_blank" : undefined
-                    }
-                    rel="noreferrer"
-                  >
-                    {s.title}
-                  </a>
+                  {s.kind === "paper" && onSource ? (
+                    <button
+                      className="tutor-evidence"
+                      onClick={() => onSource(s)}
+                      aria-label={`Read evidence ${s.id}`}
+                    >
+                      {s.title}
+                    </button>
+                  ) : (
+                    <a
+                      href={s.url}
+                      target={
+                        s.url?.startsWith("https://") ? "_blank" : undefined
+                      }
+                      rel="noreferrer"
+                    >
+                      {s.title}
+                    </a>
+                  )}
                   {s.quote && <blockquote>{s.quote}</blockquote>}
                 </div>
               ))}

@@ -298,6 +298,20 @@ export function PaperReader({ id }: { id: string }) {
                   paper={paper}
                   conceptId={tutorConcept}
                   level={mode}
+                  onSource={(source) => {
+                    const passage = paper.extraction.passages.find(
+                      (p) => p.id === source.id,
+                    );
+                    if (
+                      passage &&
+                      source.quote &&
+                      passage.text.includes(source.quote)
+                    )
+                      openEvidence({
+                        passageId: passage.id,
+                        quote: source.quote,
+                      });
+                  }}
                 />
                 <span className="eyebrow">FOLLOW THE EVIDENCE</span>
                 <h3>Understanding starts at the source.</h3>

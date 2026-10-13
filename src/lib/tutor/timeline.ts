@@ -152,8 +152,15 @@ export function defaultTimeline(
               target: "scene",
               payload: {
                 key,
-                value:
-                  Math.round((start + ((end - start) * i) / 12) * 1000) / 1000,
+                value: Math.max(
+                  control.min,
+                  Math.min(
+                    control.max,
+                    Math.round(
+                      (start + ((end - start) * i) / 12) / control.step,
+                    ) * control.step,
+                  ),
+                ),
               },
             },
           ],

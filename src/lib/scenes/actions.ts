@@ -127,6 +127,15 @@ export function highlightableIds(scene: Scene, state: SceneState) {
       : []),
   ];
 }
+export function revealStep(scene: Scene, id: string) {
+  return scene.type === "dna-replication"
+    ? id === "dna-leading" || id === "dna-lagging"
+      ? 3
+      : id === "dna-fork"
+        ? 1
+        : 0
+    : 0;
+}
 export const supportsComparison = (scene: Scene) =>
   ["supply-demand", "task-scheduler", "historical-timeline"].includes(
     scene.type,
@@ -153,6 +162,12 @@ export function transition(
       )
         return fail("Unknown or duplicate highlight element.");
       next.highlighted = ids;
+      // Actor focus reveals its first meaningful molecular stage, just as
+      // selecting a process node reveals the corresponding ordered step.
+      next.step = Math.max(
+        next.step,
+        ...ids.map((id) => revealStep(scene, id)),
+      );
       next.playing = false;
       break;
     }
@@ -257,8 +272,10 @@ export function transition(
   if (scene.type === "process-diagram")
     next.selected = scene.config.nodes[next.step].id;
   if (next.step >= maxSceneStep(scene, next)) next.playing = false;
-  next.highlighted = (next.highlighted || []).filter((id) =>
-    highlightableIds(scene, next).includes(id),
+  next.highlighted = (next.highlighted || []).filter(
+    (id) =>
+      highlightableIds(scene, next).includes(id) &&
+      revealStep(scene, id) <= next.step,
   );
   return {
     ok: true,

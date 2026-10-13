@@ -14,13 +14,11 @@ test("upload extracts a paper, rejects invalid inputs, persists and reports miss
   await expect(
     page.getByRole("heading", { name: "Start with a paper." }),
   ).toBeVisible();
-  await page
-    .getByLabel("Research paper PDF")
-    .setInputFiles({
-      name: "soil.pdf",
-      mimeType: "application/pdf",
-      buffer: uploadPdf,
-    });
+  await page.getByLabel("Research paper PDF").setInputFiles({
+    name: "soil.pdf",
+    mimeType: "application/pdf",
+    buffer: uploadPdf,
+  });
   await page.getByRole("button", { name: "Extract paper" }).click();
   await expect(page).toHaveURL(/\/papers\/[a-f0-9]{64}$/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -162,6 +160,15 @@ test("saved analysis: level switch, citation evidence, concept map, cached reope
   await expect(tutor.locator(".tutor-sources blockquote")).toContainText(
     "Clay retained more water",
   );
+  await tutor.locator(".tutor-sources summary").click();
+  await tutor
+    .getByRole("button", { name: `Read evidence ${passage.id}`, exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.locator(".evidence-dialog blockquote")).toContainText(
+    "Clay retained more water",
+  );
+  await page.keyboard.press("Escape");
   await expect(
     tutor.getByRole("button", { name: "Apply to scene", exact: true }),
   ).toHaveCount(0);

@@ -9,13 +9,11 @@ export function paperTutorScene(paper: PaperRecord): Scene {
       "This paper view explains extracted evidence; no visualization actions are available.",
     ],
     config: {
-      nodes: (paper.analysis?.result.concepts || [])
-        .slice(0, 7)
-        .map((c) => ({
-          id: c.id.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 32),
-          label: c.name.slice(0, 80),
-          description: c.beginner.slice(0, 1000),
-        })),
+      nodes: (paper.analysis?.result.concepts || []).slice(0, 7).map((c) => ({
+        id: c.id.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 32),
+        label: c.name.slice(0, 80),
+        description: c.beginner.slice(0, 1000),
+      })),
     },
   };
 }

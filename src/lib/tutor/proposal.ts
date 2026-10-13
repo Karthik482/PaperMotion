@@ -64,6 +64,8 @@ export function planCandidate(
   const actions = reply.actions.filter(
     (a): a is SceneAction => a.type !== "navigate_scene",
   );
+  if (actions.some((a, i) => a.type === "reset" && i > 0))
+    throw new Error("Reset cannot erase earlier actions in the same proposal");
   if (actions.some((a) => !cap.actions.includes(a.type)))
     throw new Error("Unsupported scene action");
   const afterState = applyBatch(scene, state, actions);

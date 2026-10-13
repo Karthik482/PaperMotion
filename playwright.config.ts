@@ -3,6 +3,8 @@ import path from "node:path";
 const testData = path.join(process.cwd(), ".papermotion/browser-tests");
 process.env.PAPERMOTION_DATA_DIR = testData;
 export default defineConfig({
+  workers: 1,
+  timeout: 60000,
   testDir: "./tests/browser",
   use: { baseURL: "http://127.0.0.1:3100", headless: true },
   webServer: [

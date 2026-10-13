@@ -78,6 +78,11 @@ export function WatchControls({
           ? "Reduced motion is on. Use Next frame and Previous frame."
           : "Arrow keys step through focused playback controls. Switching modes preserves the current model; Replay starts the sequence again."}
       </small>
+      {watch.error && (
+        <p role="status" className="watch-error">
+          {watch.error}
+        </p>
+      )}
     </div>
   );
 }

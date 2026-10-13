@@ -58,7 +58,7 @@ export async function resolveContext(request: TutorRequest) {
       .slice(0, 8)
       .map((p) => ({
         id: p.id,
-        title: `${paper.extraction.title} · page ${p.page}`,
+        title: `${paper.extraction.title} · page ${p.page}`.slice(0, 300),
         kind: "paper",
         quote: p.text.slice(0, 1200),
         page: p.page,
@@ -132,6 +132,10 @@ export async function resolveContext(request: TutorRequest) {
     id: s.id,
     title: s.title.slice(0, 180),
     type: s.experience.scene?.type || "illustrative",
+    historicalEventIds:
+      s.experience.scene?.type === "historical-timeline"
+        ? s.experience.scene.config.eventIds
+        : [],
   }));
   return {
     scene,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { computedExample } from "../scenes/output";
-import { sceneSchema, validateScene } from "../scenes/schemas";
+import { baseSceneSchema, sceneSchema, validateScene } from "../scenes/schemas";
 import { sceneProfiles } from "../scenes/profiles";
 export const topicInputSchema = z.object({
   topic: z
@@ -152,42 +152,63 @@ export function validateInteractivePlan(
   }
   return plan;
 }
-export const universalPlanSchema = interactivePlanSchema
-  .extend({
-    steps: z
-      .array(
-        interactivePlanSchema.shape.steps.element
-          .extend({
-            experience: z.union(
-              sceneSchema.options.map((option) => {
-                const profile = sceneProfiles[option.shape.type.value];
-                return interactivePlanSchema.shape.steps.element.shape.experience
-                  .extend({
-                    scene: option,
-                    intent:
-                      topicPlanSchema.shape.steps.element.shape.experience.shape.intent
-                        .unwrap()
-                        .unwrap()
-                        .extend({
-                          family: z.enum(
-                            profile.families as [
-                              (typeof profile.families)[number],
-                              ...(typeof profile.families)[number][],
-                            ],
-                          ),
-                          fidelity: z.literal(profile.fidelity),
-                        }),
-                  })
-                  .strict();
-              }),
-            ),
-          })
-          .strict(),
-      )
-      .min(3)
-      .max(7),
-  })
-  .strict();
+function universalSchema(
+  options: typeof sceneSchema.options | typeof baseSceneSchema.options,
+) {
+  return interactivePlanSchema
+    .extend({
+      steps: z
+        .array(
+          interactivePlanSchema.shape.steps.element
+            .extend({
+              experience: z.union(
+                options.map((option) => {
+                  const profile = sceneProfiles[option.shape.type.value];
+                  return interactivePlanSchema.shape.steps.element.shape.experience
+                    .extend({
+                      scene: option,
+                      intent:
+                        topicPlanSchema.shape.steps.element.shape.experience.shape.intent
+                          .unwrap()
+                          .unwrap()
+                          .extend({
+                            family: z.enum(
+                              profile.families as [
+                                (typeof profile.families)[number],
+                                ...(typeof profile.families)[number][],
+                              ],
+                            ),
+                            fidelity: z.literal(profile.fidelity),
+                          }),
+                    })
+                    .strict();
+                }),
+              ),
+            })
+            .strict(),
+        )
+        .min(3)
+        .max(7),
+    })
+    .strict();
+}
+export const universalPlanSchema = universalSchema(sceneSchema.options);
+// Lesson planning chooses models and pedagogy. Watch sequences are authored
+// locally or by the bounded tutor contract, keeping the planning prompt small.
+export const universalPlannerSchema = universalSchema(baseSceneSchema.options);
+export const interactivePlannerSchema = interactivePlanSchema.extend({
+  steps: z
+    .array(
+      interactivePlanSchema.shape.steps.element.extend({
+        experience:
+          interactivePlanSchema.shape.steps.element.shape.experience.extend({
+            scene: baseSceneSchema,
+          }),
+      }),
+    )
+    .min(3)
+    .max(7),
+});
 export function validateUniversalPlan(input: unknown, topic: string) {
   if (JSON.stringify(input).length > 120000)
     throw new Error("Lesson specification exceeds its size limit");

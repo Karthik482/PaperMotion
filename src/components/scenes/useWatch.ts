@@ -24,6 +24,7 @@ export function useWatch(
   const [mode, setMode] = useState<"watch" | "explore">("explore"),
     [sequence, setSequence] = useState<Sequence | null>(null),
     ref = useRef(sequence);
+  const [error, setError] = useState("");
   function update(next: Sequence | null) {
     ref.current = next;
     setSequence(next);
@@ -36,11 +37,20 @@ export function useWatch(
       ...structuredClone(session.ref.current),
       playing: false,
     };
-    const verified = validateTimeline(
-      scene,
-      baseline,
-      timeline || scene.watch || defaultTimeline(scene, baseline),
-    ).timeline;
+    let verified: WatchTimeline;
+    try {
+      verified = validateTimeline(
+        scene,
+        baseline,
+        timeline || scene.watch || defaultTimeline(scene, baseline),
+      ).timeline;
+      setError("");
+    } catch {
+      verified = defaultTimeline(scene, baseline);
+      setError(
+        "This saved sequence no longer fits the current controls. A local walkthrough is available using the current model.",
+      );
+    }
     const next: Sequence = {
       timeline: verified,
       baseline,
@@ -85,7 +95,7 @@ export function useWatch(
   }
   function replay() {
     pause();
-    const current = make();
+    const current = make(ref.current?.timeline);
     move(0, current);
   }
   function manual() {
@@ -126,6 +136,12 @@ export function useWatch(
     move,
     speed: (speed: 0.5 | 1 | 2) => {
       if (ref.current) update({ ...ref.current, speed });
+    },
+    error,
+    runSimulation: () => {
+      pause();
+      update(null);
+      setMode("explore");
     },
   };
 }
