@@ -8,7 +8,7 @@ export type SceneState = {
   layers?: Record<string, boolean>;
   comparison?: boolean;
   view?: { zoom: number; x: number; y: number };
-  speed?: number;
+  speed?: 0.5 | 1 | 2;
   playing?: boolean;
   highlighted?: string[];
 };
@@ -266,7 +266,7 @@ export function initialSceneState(scene: Scene): SceneState {
     comparison:
       scene.type === "historical-timeline" ? scene.config.comparison : false,
     view: { zoom: 1, x: 0, y: 0 },
-    highlighted:[],
+    highlighted: [],
     speed: 1,
     playing: false,
   };
@@ -368,6 +368,24 @@ export function restoreSceneState(scene: Scene, input: unknown): SceneState {
   )
     state.view = { zoom: value.view.zoom, x: value.view.x, y: value.view.y };
   if ([0.5, 1, 2].includes(value.speed!)) state.speed = value.speed;
+  const highlightIds = [
+    ...ids,
+    ...(["concept-map", "process-diagram"].includes(scene.type)
+      ? (
+          scene as Extract<Scene, { type: "concept-map" | "process-diagram" }>
+        ).config.nodes.map((n) => n.id)
+      : []),
+    ...(scene.type === "dna-replication"
+      ? ["dna-leading", "dna-lagging", "dna-fork"]
+      : []),
+  ];
+  if (
+    Array.isArray(value.highlighted) &&
+    value.highlighted.length <= 6 &&
+    new Set(value.highlighted).size === value.highlighted.length &&
+    value.highlighted.every((id) => highlightIds.includes(id))
+  )
+    state.highlighted = [...value.highlighted];
   return state;
 }
 export function evaluateFunction(
